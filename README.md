@@ -1,16 +1,38 @@
-# tractian_challenge
+# Video Demo
 
-A new Flutter project.
+https://github.com/123f0ur5/mobile-challenge/assets/110590582/ddf039c6-f0da-49cd-bba9-5d7f3b74c682
 
-## Getting Started
+## Installation
 
-This project is a starting point for a Flutter application.
+To run this project locally, follow these steps:
 
-A few resources to get you started if this is your first Flutter project:
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/123f0ur5/mobile-challenge.git
+   ```
+2. **Navigate to the project directory**:
+   ```bash
+   cd mobile-challenge
+   ```
+3. **Install dependencies**:
+   ```bash
+   flutter pub get
+   ```
+4. **Run the application**:
+   ```bash
+   flutter run
+   ```
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+# Tecnologias utilizadas
+- Flutter (version: 3.22.2)
+- Dart (version: 3.4.3)
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+# Packages utilizados
+- dartz: ^0.10.1
+- dio: ^5.4.3+1
+- provider: ^6.1.2
+- flutter_svg: ^2.0.10+1
+
+# Developed By
+
+- [@lass123four5](https://www.linkedin.com/in/lass123four5/)
