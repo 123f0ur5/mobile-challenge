@@ -6,6 +6,7 @@ import 'package:tractian_challenge/model/models/location.dart';
 import 'package:tractian_challenge/view/widgets/custom_icon_button.dart';
 import 'package:tractian_challenge/view/widgets/loading_widget.dart';
 import 'package:tractian_challenge/view/widgets/custom_search_bar.dart';
+import 'package:tractian_challenge/view/widgets/not_found.dart';
 import 'package:tractian_challenge/view_model/assets_tree_view_model.dart';
 
 class AssetsTreeView extends StatefulWidget {
@@ -144,23 +145,25 @@ class _AssetsTreeState extends State<AssetsTree> {
         const SizedBox(
           height: 16,
         ),
-        Expanded(
-          child: SingleChildScrollView(
-            physics: const BouncingScrollPhysics(),
-            child: ListView.builder(
-              shrinkWrap: true,
-              itemCount: widget.mainNodes.length,
-              physics: const NeverScrollableScrollPhysics(),
-              padding: EdgeInsets.zero,
-              itemBuilder: (context, index) => NodeWidget(
-                node: widget.mainNodes[index],
-                children: _getChildren(widget.mainNodes[index]),
-                mainNode: true,
-                onParentTap: widget.onParentTap,
+        widget.mainNodes.isEmpty
+            ? const NotFound(message: "Nenhum item encontrado")
+            : Expanded(
+                child: SingleChildScrollView(
+                  physics: const BouncingScrollPhysics(),
+                  child: ListView.builder(
+                    shrinkWrap: true,
+                    itemCount: widget.mainNodes.length,
+                    physics: const NeverScrollableScrollPhysics(),
+                    padding: EdgeInsets.zero,
+                    itemBuilder: (context, index) => NodeWidget(
+                      node: widget.mainNodes[index],
+                      children: _getChildren(widget.mainNodes[index]),
+                      mainNode: true,
+                      onParentTap: widget.onParentTap,
+                    ),
+                  ),
+                ),
               ),
-            ),
-          ),
-        ),
       ],
     );
   }

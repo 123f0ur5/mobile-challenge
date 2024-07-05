@@ -19,6 +19,7 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => AssetsTreeViewModel(), lazy: true)
       ],
       child: const MaterialApp(
+        debugShowCheckedModeBanner: false,
         title: 'Desafio Mobile',
         home: CompanyView(),
       ),
