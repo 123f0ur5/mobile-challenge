@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:tractian_challenge/model/models/company.dart';
 import 'package:tractian_challenge/view/widgets/company_widget.dart';
 import 'package:tractian_challenge/view/widgets/loading_widget.dart';
@@ -13,11 +12,20 @@ class CompanyView extends StatefulWidget {
 }
 
 class _CompanyViewState extends State<CompanyView> {
+  final CompanyViewModel _companyViewModel = CompanyViewModel();
+
   @override
   void initState() {
-    Provider.of<CompanyViewModel>(context, listen: false).fetchCompanies();
+    _companyViewModel.fetchCompanies();
 
     super.initState();
+  }
+
+  @override
+  void dispose() {
+    _companyViewModel.dispose();
+
+    super.dispose();
   }
 
   @override
@@ -35,12 +43,13 @@ class _CompanyViewState extends State<CompanyView> {
         centerTitle: true,
         backgroundColor: const Color(0xFF17192D),
       ),
-      body: Consumer<CompanyViewModel>(
-        builder: (context, value, _) => value.bodyWidget == null
+      body: ListenableBuilder(
+        listenable: _companyViewModel,
+        builder: (context, _) => _companyViewModel.bodyWidget == null
             ? const LoadingWidget(
                 message: "Carregando empresas...",
               )
-            : value.bodyWidget!,
+            : _companyViewModel.bodyWidget!,
       ),
     );
   }

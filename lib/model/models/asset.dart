@@ -1,17 +1,14 @@
 class AssetModel {
   String? gatewayId;
-  String? id;
   String? locationId;
   String? name;
   String? parentId;
   String? sensorId;
   String? sensorType;
   String? status;
-  List<AssetModel> assetList = [];
 
   AssetModel({
     this.gatewayId,
-    this.id,
     this.locationId,
     this.name,
     this.parentId,
@@ -21,15 +18,17 @@ class AssetModel {
   });
 
   static fromJson(Map<String, dynamic> json) {
-    return AssetModel(
-      gatewayId: json['id'] ?? '',
-      id: json['id'] ?? '',
-      locationId: json['locationId'] ?? '',
-      name: json['name'] ?? '',
-      parentId: json['parentId'] ?? '',
-      sensorId: json['sensorId'] ?? '',
-      sensorType: json['sensorType'] ?? '',
-      status: json['status'] ?? '',
-    );
+    return {
+      "model": AssetModel(
+        gatewayId: json['gatewayId'] ?? '',
+        locationId: json['locationId'] ?? '',
+        name: json['name'] ?? '',
+        parentId: json['parentId'] ?? '',
+        sensorId: json['sensorId'] ?? '',
+        sensorType: json['sensorType'] ?? '',
+        status: json['status'] ?? '',
+      ),
+      "children": [],
+    };
   }
 }

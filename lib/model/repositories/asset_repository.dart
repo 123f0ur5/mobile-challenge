@@ -5,14 +5,14 @@ import 'package:tractian_challenge/model/helpers/request_helper.dart';
 import 'package:tractian_challenge/model/models/asset.dart';
 
 class AssetRepository {
-  Future<Either<Failure, List<AssetModel>>> fetchAssets(String companyId) async {
+  Future<Either<Failure, Map>> fetchAssets(String companyId) async {
     Either result = await RequestHelper.makeRequest(ApiConstants.fetchAssets(companyId));
 
     return result.fold(
       (error) => Left(error),
       (data) {
         try {
-          return Right(List<AssetModel>.from(data.map((e) => AssetModel.fromJson(e))));
+          return Right({for (var entry in data) entry['id']: AssetModel.fromJson(entry)});
         } catch (_) {
           return const Left(ModelFailure("Houve um erro durante o processamento dos dados."));
         }

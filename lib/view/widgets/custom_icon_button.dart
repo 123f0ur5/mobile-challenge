@@ -1,19 +1,17 @@
 import 'package:flutter/material.dart';
 
 class CustomIconButton extends StatelessWidget {
-  final Widget text;
-  final Icon icon;
-  final Color backgroundColor;
-  final Color borderColor;
+  final String text;
+  final IconData icon;
+  final bool isActive;
   final VoidCallback onPressed;
 
   const CustomIconButton({
     super.key,
     required this.text,
     required this.icon,
+    required this.isActive,
     required this.onPressed,
-    this.backgroundColor = Colors.white,
-    this.borderColor = Colors.white,
   });
 
   @override
@@ -21,22 +19,32 @@ class CustomIconButton extends StatelessWidget {
     return OutlinedButton(
       onPressed: () => onPressed(),
       style: OutlinedButton.styleFrom(
-        backgroundColor: backgroundColor,
+        backgroundColor: isActive ? const Color(0xFF2188FF) : Colors.white,
         padding: const EdgeInsets.symmetric(horizontal: 16),
         shape: const RoundedRectangleBorder(
           borderRadius: BorderRadius.all(
             Radius.circular(3),
           ),
         ),
-        side: BorderSide(color: borderColor),
+        side: BorderSide(
+          color: isActive ? const Color(0xFF2188FF) : const Color(0xFF77818C),
+        ),
       ),
       child: Row(
         children: [
-          icon,
+          Icon(
+            icon,
+            color: isActive ? Colors.white : const Color(0xFF77818C),
+          ),
           const SizedBox(
             width: 10,
           ),
-          text,
+          Text(
+            text,
+            style: TextStyle(
+              color: isActive ? Colors.white : const Color(0xFF77818C),
+            ),
+          ),
         ],
       ),
     );

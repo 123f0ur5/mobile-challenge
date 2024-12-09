@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:provider/provider.dart';
 import 'package:tractian_challenge/model/models/asset.dart';
 import 'package:tractian_challenge/model/models/location.dart';
 import 'package:tractian_challenge/view/widgets/custom_icon_button.dart';
@@ -22,14 +21,18 @@ class AssetsTreeView extends StatefulWidget {
 }
 
 class _AssetsTreeViewState extends State<AssetsTreeView> {
+  final AssetsTreeViewModel _assetsTreeViewModel = AssetsTreeViewModel();
+
   @override
   void initState() {
-    Provider.of<AssetsTreeViewModel>(context, listen: false).initData(companyId: widget.companyId);
+    _assetsTreeViewModel.initData(companyId: widget.companyId);
     super.initState();
   }
 
   @override
   void dispose() {
+    _assetsTreeViewModel.dispose();
+
     super.dispose();
   }
 
@@ -56,29 +59,30 @@ class _AssetsTreeViewState extends State<AssetsTreeView> {
         centerTitle: true,
         backgroundColor: const Color(0xFF17192D),
       ),
-      body: Consumer<AssetsTreeViewModel>(
-        builder: (context, value, _) => value.bodyWidget == null
+      body: ListenableBuilder(
+        listenable: _assetsTreeViewModel,
+        builder: (context, _) => _assetsTreeViewModel.bodyWidget == null
             ? const LoadingWidget(
                 message: "Carregando assets...",
               )
-            : value.bodyWidget!,
+            : _assetsTreeViewModel.bodyWidget!,
       ),
     );
   }
 }
 
 class AssetsTree extends StatefulWidget {
-  final List<dynamic> mainNodes;
-  final Function(dynamic parent) onParentTap;
-  final VoidCallback onChanged;
-  final TextEditingController controller;
+  final List<String> mainNodesIds;
+  final Map allNodes;
+  final AssetsTreeViewModel controller;
+  final TextEditingController txtController;
 
   const AssetsTree({
     super.key,
-    required this.mainNodes,
-    required this.onParentTap,
-    required this.onChanged,
+    required this.mainNodesIds,
+    required this.allNodes,
     required this.controller,
+    required this.txtController,
   });
 
   @override
@@ -90,52 +94,40 @@ class _AssetsTreeState extends State<AssetsTree> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        CustomSearchBar(controller: widget.controller, onChanged: widget.onChanged),
+        CustomSearchBar(
+          controller: widget.txtController,
+          onChanged: widget.controller.onNodesSearch,
+        ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Consumer<AssetsTreeViewModel>(
-            builder: (context, value, _) => Row(
+          child: ListenableBuilder(
+            listenable: widget.controller,
+            builder: (context, _) => Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 CustomIconButton(
-                  text: Text(
-                    "Sensor de Energia",
-                    style: TextStyle(
-                      color: value.isEnergyFilterActive ? Colors.white : const Color(0xFF77818C),
-                    ),
-                  ),
-                  icon: Icon(
-                    Icons.bolt,
-                    color: value.isEnergyFilterActive ? Colors.white : const Color(0xFF77818C),
-                  ),
-                  backgroundColor: value.isEnergyFilterActive ? const Color(0xFF2188FF) : Colors.white,
-                  borderColor: value.isEnergyFilterActive ? const Color(0xFF2188FF) : const Color(0xFF77818C),
+                  text: "Sensor de Energia",
+                  icon: Icons.bolt,
+                  isActive: widget.controller.isEnergyFilterActive,
                   onPressed: () {
-                    value.isEnergyFilterActive = !value.isEnergyFilterActive;
+                    widget.controller.isEnergyFilterActive = !widget.controller.isEnergyFilterActive;
+                    widget.controller.onNodesSearch();
 
-                    widget.onChanged();
+                    setState(() {});
                   },
                 ),
                 const SizedBox(
                   width: 16,
                 ),
                 CustomIconButton(
-                  text: Text(
-                    "Estado crítico",
-                    style: TextStyle(
-                      color: value.isAlertFilterActive ? Colors.white : const Color(0xFF77818C),
-                    ),
-                  ),
-                  icon: Icon(
-                    Icons.error_outline,
-                    color: value.isAlertFilterActive ? Colors.white : const Color(0xFF77818C),
-                  ),
-                  backgroundColor: value.isAlertFilterActive ? const Color(0xFF2188FF) : Colors.white,
-                  borderColor: value.isAlertFilterActive ? const Color(0xFF2188FF) : const Color(0xFF77818C),
-                  onPressed: () {
-                    value.isAlertFilterActive = !value.isAlertFilterActive;
+                  text: "Estado crítico",
+                  icon: Icons.error_outline,
+                  isActive: widget.controller.isAlertFilterActive,
+                  onPressed: () async {
+                    widget.controller.isAlertFilterActive = !widget.controller.isAlertFilterActive;
+                    await widget.controller.onNodesSearch();
 
-                    widget.onChanged();
+                    setState(() {});
                   },
                 ),
               ],
@@ -145,21 +137,21 @@ class _AssetsTreeState extends State<AssetsTree> {
         const SizedBox(
           height: 16,
         ),
-        widget.mainNodes.isEmpty
+        widget.mainNodesIds.isEmpty
             ? const NotFound(message: "Nenhum item encontrado")
             : Expanded(
                 child: SingleChildScrollView(
                   physics: const BouncingScrollPhysics(),
                   child: ListView.builder(
                     shrinkWrap: true,
-                    itemCount: widget.mainNodes.length,
+                    itemCount: widget.mainNodesIds.length,
                     physics: const NeverScrollableScrollPhysics(),
                     padding: EdgeInsets.zero,
                     itemBuilder: (context, index) => NodeWidget(
-                      node: widget.mainNodes[index],
-                      children: _getChildren(widget.mainNodes[index]),
+                      node: widget.allNodes[widget.mainNodesIds[index]],
+                      allNodes: widget.allNodes,
+                      controller: widget.controller,
                       mainNode: true,
-                      onParentTap: widget.onParentTap,
                     ),
                   ),
                 ),
@@ -171,16 +163,16 @@ class _AssetsTreeState extends State<AssetsTree> {
 
 class NodeWidget extends StatefulWidget {
   final dynamic node;
-  final List<dynamic> children;
-  final Function(dynamic parent) onParentTap;
-
+  final Map allNodes;
+  final AssetsTreeViewModel controller;
   final bool mainNode;
   final double leftPadding;
+
   const NodeWidget({
     super.key,
     required this.node,
-    required this.children,
-    required this.onParentTap,
+    required this.allNodes,
+    required this.controller,
     this.mainNode = false,
     this.leftPadding = 16,
   });
@@ -190,15 +182,17 @@ class NodeWidget extends StatefulWidget {
 }
 
 class _NodeWidgetState extends State<NodeWidget> {
+  bool isActive = false;
+
   @override
   Widget build(BuildContext context) {
-    bool hasChildren = widget.children.isNotEmpty;
+    bool hasChildren = widget.node['children']?.isNotEmpty ?? false;
 
     return ExpansionTile(
       title: Row(
         children: [
           SvgPicture.asset(
-            _getNodeIcon(widget.node),
+            _getNodeIcon(widget.node['model']),
             width: 20,
             height: 20,
           ),
@@ -206,48 +200,45 @@ class _NodeWidgetState extends State<NodeWidget> {
             width: 8,
           ),
           Text(
-            widget.node.name,
+            widget.node['model'].name,
             style: const TextStyle(
               fontSize: 12,
               color: Colors.black,
             ),
           ),
-          _getNodeTrailingIcon(widget.node),
+          _getNodeTrailingIcon(widget.node['model']),
         ],
       ),
       shape: const Border(),
       leading: hasChildren ? const Icon(Icons.keyboard_arrow_down) : null,
       trailing: const SizedBox.shrink(),
-      tilePadding:
-          EdgeInsets.only(left: !hasChildren && !widget.mainNode ? widget.leftPadding + 30 : widget.leftPadding),
+      tilePadding: EdgeInsets.only(
+        left: !hasChildren && !widget.mainNode ? widget.leftPadding + 30 : widget.leftPadding,
+      ),
       minTileHeight: 40,
       enabled: hasChildren,
       maintainState: true,
-      onExpansionChanged: (_) {
-        widget.onParentTap(widget.node);
-        setState(() {});
+      onExpansionChanged: (expanded) {
+        setState(() {
+          isActive = expanded;
+        });
       },
       children: [
-        for (var child in widget.children)
-          NodeWidget(
-            node: child,
-            children: _getChildren(child),
-            leftPadding: widget.leftPadding + 16,
-            onParentTap: widget.onParentTap,
-          )
+        if (isActive)
+          ListView.builder(
+            itemCount: widget.node['children'].length,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            itemBuilder: (context, index) => NodeWidget(
+              node: widget.allNodes[widget.node['children'][index]],
+              allNodes: widget.allNodes,
+              controller: widget.controller,
+              leftPadding: widget.leftPadding + 16,
+            ),
+          ),
       ],
     );
   }
-}
-
-List<dynamic> _getChildren(dynamic parent) {
-  if (parent.runtimeType == LocationModel) {
-    return [...?parent?.assetList, ...?parent?.childLocations];
-  } else if (parent.runtimeType == AssetModel) {
-    return [...?parent?.assetList];
-  }
-
-  return [];
 }
 
 String _getNodeIcon(dynamic node) {
