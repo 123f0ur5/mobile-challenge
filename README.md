@@ -24,13 +24,12 @@ To run this project locally, follow these steps:
    ```
 
 # Tecnologias utilizadas
-- Flutter (version: 3.22.2)
-- Dart (version: 3.4.3)
+- Flutter (version: 3.24.5)
+- Dart (version: 3.5.4)
 
 # Packages utilizados
 - dartz: ^0.10.1
 - dio: ^5.4.3+1
-- provider: ^6.1.2
 - flutter_svg: ^2.0.10+1
 
 # Developed By
